@@ -1,0 +1,52 @@
+{
+    "name": "spiral/app",
+    "type": "project",
+    "license": "MIT",
+    "description": "Spiral Application installer",
+    "homepage": "https://spiral.dev",
+    "support": {
+        "issues": "https://github.com/spiral/app/issues",
+        "source": "https://github.com/spiral/app"
+    },
+    "require": {
+        "php": ">=8.3",
+        "ext-sockets": "*",
+        "ext-mbstring": "*",
+        "nesbot/carbon": "^3.4",
+        "spiral/cycle-bridge": "^2.5",
+        "spiral/framework": "^3.14",
+        "spiral/roadrunner-bridge": "^3.6",
+        "spiral/sentry-bridge": "^2.2",
+        "spiral/temporal-bridge": "^3.1",
+        "temporal-php/support": "^1.0"
+    },
+    "require-dev": {
+        "buggregator/trap": "^1.7",
+        "spiral/roadrunner-cli": "^2.5",
+        "spiral/testing": "^2.3",
+        "vimeo/psalm": "^5.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/src",
+            "Taxi\\": "app/Taxi/src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "spiral/composer-publish-plugin": true,
+            "php-http/discovery": false
+        }
+    },
+    "scripts": {
+        "rr:download": "rr get-binary"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

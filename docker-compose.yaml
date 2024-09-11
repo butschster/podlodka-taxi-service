@@ -1,0 +1,128 @@
+version: '3.5'
+
+services:
+  reverse-proxy:
+    container_name: podlodka-reverse-proxy
+    image: traefik:v2.9
+    command:
+      - "--accesslog"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.file.directory=/configuration/"
+      - "--providers.file.watch=true"
+    ports:
+      - 80:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.reverse-proxy.entrypoints=web"
+      - "traefik.http.routers.reverse-proxy.rule=Host(`traefik.podlodka.localhost`)"
+      - "traefik.http.services.reverse-proxy.loadbalancer.server.port=8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - podlodka-network
+    logging:
+      driver: none
+
+  temporal-postgresql:
+    container_name: podlodka-temporal-postgresql
+    image: postgres:15
+    restart: unless-stopped
+    env_file:
+      - .docker/.env
+    environment:
+      POSTGRES_USER: ${TEMPORAL_DB_USERNAME}
+      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD}
+    volumes:
+      - type: bind
+        source: ./.docker-data/temporal-db
+        target: /var/lib/postgresql/data
+    healthcheck:
+      test: [ 'CMD', 'pg_isready', '-U', '${TEMPORAL_DB_USERNAME:-temporal}', '-d', '${TEMPORAL_DB_DATABASE:-temporal}' ]
+      interval: 3s
+      timeout: 1s
+      start_period: 0s
+      retries: 9
+    networks:
+      - podlodka-network
+    logging:
+      driver: none
+
+  temporal:
+    container_name: podlodka-temporal
+    env_file:
+      - .docker/.env
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: ${TEMPORAL_DB_USERNAME}
+      POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD}
+      POSTGRES_SEEDS: temporal-db
+      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
+    image: temporalio/auto-setup:1.24.2
+    ports:
+      - 7233:7233
+    volumes:
+      - ./.docker/temporal:/etc/temporal/config/dynamicconfig
+    restart: unless-stopped
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    networks:
+      - podlodka-network
+    healthcheck:
+      test: [ 'CMD-SHELL', 'tctl', '--address', '${TEMPORAL_ADDRESS:-temporal:7233}', 'workflow list' ]
+      interval: 1s
+      timeout: 5s
+      start_period: 2s
+      retries: 9
+    logging:
+      driver: none
+
+  temporal-ui:
+    container_name: podlodka-temporal-ui
+    depends_on:
+      temporal:
+        condition: service_started
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CORS_ORIGINS: http://localhost:3000
+    image: temporalio/ui
+    restart: unless-stopped
+    networks:
+      - podlodka-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.temporal.entrypoints=web"
+      - "traefik.http.routers.temporal.rule=Host(`temporal.podlodka.localhost`)"
+      - "traefik.http.services.temporal.loadbalancer.server.port=8080"
+    logging:
+      driver: none
+
+  buggregator:
+    container_name: podlodka-buggregator
+    image: ghcr.io/buggregator/server:latest
+    restart: unless-stopped
+    ports:
+      - "9912:9912"
+      - "9913:9913"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.buggregator.entrypoints=web"
+      - "traefik.http.routers.buggregator.rule=Host(`buggregator.podlodka.localhost`)"
+      - "traefik.http.services.buggregator.loadbalancer.server.port=8000"
+    networks:
+      - podlodka-network
+    logging:
+      driver: none
+
+networks:
+  podlodka-network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.0.31.0/24
