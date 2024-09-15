@@ -4,41 +4,63 @@ declare(strict_types=1);
 
 namespace App\Endpoint\Temporal\Workflow;
 
+use App\Endpoint\Temporal\Activity\NotificationServiceActivity;
+use App\Endpoint\Temporal\Activity\TaxiRequestActivity;
 use App\Endpoint\Temporal\Workflow\DTO\DriverRateRequest;
+use App\Endpoint\Temporal\Workflow\DTO\StartTripRequest;
 use App\Endpoint\Temporal\Workflow\DTO\UserRateRequest;
 use Carbon\CarbonInterval;
 use Spiral\TemporalBridge\Attribute\AssignWorker;
 use Taxi\DriverLocation;
-use Taxi\Rating;
 use Taxi\Trip;
+use Temporal\Activity\ActivityOptions;
+use Temporal\Internal\Workflow\ActivityProxy;
 use Temporal\Support\VirtualPromise;
 use Temporal\Workflow;
-use Temporal\Workflow\SignalMethod;
-use Temporal\Workflow\WorkflowInterface;
-use Temporal\Workflow\WorkflowMethod;
 
 #[AssignWorker('taxi-service')]
-#[WorkflowInterface]
+#[Workflow\WorkflowInterface]
 final class TripWorkflow
 {
+    private ActivityProxy|TaxiRequestActivity $taxiOrdering;
+    private ActivityProxy|NotificationServiceActivity $notificationService;
+
     private ?DriverLocation $driverLocation = null;
     private bool $finished = false;
     private array $queue = [];
 
+    public function __construct()
+    {
+        $this->taxiOrdering = Workflow::newActivityStub(
+            TaxiRequestActivity::class,
+            ActivityOptions::new()
+                ->withStartToCloseTimeout(CarbonInterval::minute())
+                ->withTaskQueue('taxi-service'),
+        );
+
+        $this->notificationService = Workflow::newActivityStub(
+            NotificationServiceActivity::class,
+            ActivityOptions::new()
+                ->withStartToCloseTimeout(CarbonInterval::minutes(5))
+                ->withTaskQueue('payment-service'),
+        );
+    }
+
     /**
      * @return VirtualPromise<Trip>
      */
-    #[WorkflowMethod]
-    public function start(Trip $trip, DriverLocation $location)
+    #[Workflow\WorkflowMethod]
+    public function start(StartTripRequest $request)
     {
-        $this->driverLocation = $location;
+        // If driver was assigned, we can start the trip
+        $trip = yield $this->taxiOrdering->startTrip($request->taxiRequestUuid);
 
         $triesToAskDriver = 0;
 
         while (true) {
             $isEvent = yield Workflow::awaitWithTimeout(
-            // TODO: use estimated time to destination
-                CarbonInterval::hours(5),
+                // TODO: use estimated time to destination
+                CarbonInterval::minutes(60),
                 fn() => $this->finished,
                 fn() => $this->queue !== [],
             );
@@ -47,6 +69,7 @@ final class TripWorkflow
                 // TODO: implement this
                 // check if the trip is finished
                 // ask driver if everything is ok
+                yield $this->notificationService->askDriverIfEverythingIsOk($request->taxiRequestUuid);
 
                 if ($triesToAskDriver >= 3) {
                     // Driver is not responding
@@ -54,6 +77,9 @@ final class TripWorkflow
                     // Ask manager to call driver
                     // Call 911 if no response
                     // Handle the situation manually
+
+                    yield $this->notificationService->driverNotResponding($request->taxiRequestUuid);
+
                     break;
                 }
 
@@ -62,10 +88,17 @@ final class TripWorkflow
             }
 
             if ($this->finished) {
-                // TODO: implement this
                 // Update trip status in the database
                 // Send notification to the user
-                // Ask user and driver to rate each other
+                $currentTime = yield Workflow::sideEffect(fn() => new \DateTimeImmutable());
+
+                yield $this->notificationService->tripFinished($request->taxiRequestUuid);
+
+                $trip = yield $this->taxiOrdering->finishTrip(
+                    $request->taxiRequestUuid,
+                    $currentTime,
+                    $this->driverLocation,
+                );
                 break;
             }
 
@@ -73,15 +106,11 @@ final class TripWorkflow
                 $request = \array_shift($this->queue);
 
                 if ($request instanceof UserRateRequest) {
-                    $trip->userRating = new Rating(
-                        $request->rating,
-                        $request->comment,
-                    );
+                    $trip = yield $this->taxiOrdering->rateUser($trip->uuid, $request);
                 } elseif ($request instanceof DriverRateRequest) {
-                    $trip->driverRating = new Rating(
-                        $request->rating,
-                        $request->comment,
-                    );
+                    $trip = yield $this->taxiOrdering->rateDriver($trip->uuid, $request);
+                } elseif ($request instanceof DriverLocation) {
+                    $this->driverLocation = $request;
                 }
             }
         }
@@ -90,30 +119,22 @@ final class TripWorkflow
     }
 
     #[Workflow\SignalMethod]
-    public function rateUser(UserRateRequest $request)
-    {
-        $this->queue[] = $request;
-    }
-
-    public function rateDriver(DriverRateRequest $request)
-    {
-        $this->queue[] = $request;
-    }
-
-    #[SignalMethod]
     public function finish(): void
     {
         $this->finished = true;
     }
 
-    #[SignalMethod]
+    #[Workflow\SignalMethod]
     public function updateLocation(DriverLocation $location): void
     {
-        $this->driverLocation = $location;
+        $this->queue[] = $location;
     }
 
+    #[Workflow\QueryMethod]
     public function currentLocation(): string
     {
-        return \json_encode($this->driverLocation->location);
+        return $this->driverLocation
+            ? \json_encode($this->driverLocation->location)
+            : 'unknown';
     }
 }

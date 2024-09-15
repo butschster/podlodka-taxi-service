@@ -7,6 +7,8 @@ namespace Taxi;
 final class DistanceCalculatorService
 {
     /**
+     * Calculate the distance between two locations
+     *
      * @return float Distance in kilometers
      */
     public function calculateDistance(Location $locationA, Location $locationB): float

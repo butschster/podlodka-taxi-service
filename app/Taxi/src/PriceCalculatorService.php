@@ -33,6 +33,10 @@ final readonly class PriceCalculatorService
         return \round($duration * $traffic * $weather * $vehicleClassCoefficient, 2);
     }
 
+    /**
+     * Calculate the estimated price of the trip based on the current location, destination location,
+     * estimated duration, and vehicle class
+     */
     public function calculateEstimatedPrice(
         Location $currentLocation,
         Location $destinationLocation,
@@ -48,6 +52,10 @@ final readonly class PriceCalculatorService
         return $this->calculatePrice($currentLocation, $destinationLocation, (int) $estimatedDuration, $vehicleClass);
     }
 
+    /**
+     * Calculate the final price of the trip based on the current location, destination location,
+     * recorder duration, and vehicle class
+     */
     public function calculateFinalPrice(
         Location $currentLocation,
         Location $destinationLocation,
@@ -59,11 +67,6 @@ final readonly class PriceCalculatorService
         $duration = $startTime->diff($endTime)->i;
 
         return $this->calculatePrice($currentLocation, $destinationLocation, $duration, $vehicleClass);
-    }
-
-    private function calculateDistance(Location $currentLocation, Location $destinationLocation): int
-    {
-        return \rand(1, 100);
     }
 
     private function getTraffic(

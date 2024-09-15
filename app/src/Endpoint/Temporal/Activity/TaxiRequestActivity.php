@@ -6,9 +6,13 @@ namespace App\Endpoint\Temporal\Activity;
 
 use App\Endpoint\Temporal\Workflow\DTO\AcceptRequest;
 use App\Endpoint\Temporal\Workflow\DTO\CreateRequest;
+use App\Endpoint\Temporal\Workflow\DTO\DriverRateRequest;
 use App\Endpoint\Temporal\Workflow\DTO\DriverStatus;
+use App\Endpoint\Temporal\Workflow\DTO\UserRateRequest;
 use Ramsey\Uuid\UuidInterface;
 use Spiral\TemporalBridge\Attribute\AssignWorker;
+use Taxi\DriverLocation;
+use Taxi\Rating;
 use Taxi\TaxiOrderingService;
 use Taxi\TaxiRequest;
 use Taxi\Trip;
@@ -78,8 +82,47 @@ final readonly class TaxiRequestActivity
         }
     }
 
+    /**
+     * @return VirtualPromise<Trip>
+     */
+    #[ActivityMethod]
     public function startTrip(UuidInterface $taxiRequestUuid): Trip
     {
         return $this->taxiOrderingService->startTrip($taxiRequestUuid);
+    }
+
+    /**
+     * @return VirtualPromise<Trip>
+     */
+    #[ActivityMethod]
+    public function finishTrip(UuidInterface $tripUuid, \DateTimeImmutable $time, DriverLocation|null $location): Trip
+    {
+        return $this->taxiOrderingService->endTrip($tripUuid, $time, $location);
+    }
+
+    /**
+     * @return VirtualPromise<Trip>
+     */
+    #[ActivityMethod]
+    public function rateUser(UuidInterface $tripUuid, UserRateRequest $request): Trip
+    {
+        return $this->taxiOrderingService->rateUser(
+            tripUuid: $tripUuid,
+            rating: $request->rating,
+            comment: $request->comment,
+        );
+    }
+
+    /**
+     * @return VirtualPromise<Trip>
+     */
+    #[ActivityMethod]
+    public function rateDriver(UuidInterface $tripUuid, DriverRateRequest $request): Trip
+    {
+        return $this->taxiOrderingService->rateDriver(
+            tripUuid: $tripUuid,
+            rating: $request->rating,
+            comment: $request->comment,
+        );
     }
 }

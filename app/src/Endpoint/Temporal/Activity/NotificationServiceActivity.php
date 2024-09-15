@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Endpoint\Temporal\Activity;
 
+use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\UuidInterface;
 use Spiral\TemporalBridge\Attribute\AssignWorker;
-use Taxi\TaxiRequest;
 use Temporal\Activity\ActivityInterface;
 use Temporal\Activity\ActivityMethod;
 use Temporal\Support\VirtualPromise;
 
 #[AssignWorker('notification-service')]
 #[ActivityInterface(prefix: "notification-request.")]
-final class NotificationServiceActivity
+final readonly class NotificationServiceActivity
 {
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {}
+
     /**
      * @return VirtualPromise<void>
      */
@@ -22,6 +26,7 @@ final class NotificationServiceActivity
     public function newRequest(UuidInterface $taxiRequestUuid): void
     {
         // Send push notification to nearby drivers
+        $this->logger->info('Sending push notification to nearby drivers');
     }
 
     /**
@@ -31,6 +36,7 @@ final class NotificationServiceActivity
     public function userCanceled(UuidInterface $taxiRequestUuid): void
     {
         // Send push notification to nearby drivers
+        $this->logger->info('Request was canceled by the user');
     }
 
     /**
@@ -40,6 +46,7 @@ final class NotificationServiceActivity
     public function driverAccepted(UuidInterface $taxiRequestUuid, UuidInterface $driverUuid): void
     {
         // Send push notification to user
+        $this->logger->info('Driver accepted the request');
     }
 
     /**
@@ -49,6 +56,7 @@ final class NotificationServiceActivity
     public function noDriverAvailable(UuidInterface $taxiRequestUuid): void
     {
         // Send push notification to user
+        $this->logger->info('No driver available');
     }
 
     /**
@@ -58,6 +66,7 @@ final class NotificationServiceActivity
     public function driverArrived(UuidInterface $taxiRequestUuid): void
     {
         // Send push notification to user
+        $this->logger->info('Driver arrived');
     }
 
     /**
@@ -67,6 +76,26 @@ final class NotificationServiceActivity
     public function driverMatchFailed(UuidInterface $taxiRequestUuid, UuidInterface $driverUuid): void
     {
         // Send push notification to driver that he was not selected
+        $this->logger->info('Driver was not selected');
     }
 
+    /**
+     * @return VirtualPromise<void>
+     */
+    #[ActivityMethod]
+    public function tripFinished(UuidInterface $taxiRequestUuid): void
+    {
+        // Send push notification to user
+        $this->logger->info('Trip finished');
+    }
+
+    /**
+     * @return VirtualPromise<void>
+     */
+    #[ActivityMethod]
+    public function driverNotResponding(UuidInterface $taxiRequestUuid): void
+    {
+        // Send push notification to a manager to call the driver
+        $this->logger->info('Driver is not responding');
+    }
 }
