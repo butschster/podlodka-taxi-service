@@ -31,6 +31,17 @@ final class KnowledgeBaseGenerator extends Command
         $this->files = $files;
         $files->ensureDirectory(directory: $this->outputDir);
 
+        // Temporal Workflow
+        $this->writeContent(
+            description: <<<'TEXT'
+Temporal Workflow
+TEXT,
+            sourcePath: [
+                $dirs->get('app') . 'src/Endpoint/Temporal',
+            ],
+            outputPath: $this->outputDir . '/temporal-layer.txt',
+        );
+
         // Domain Layer
         $this->writeContent(
             description: <<<'TEXT'

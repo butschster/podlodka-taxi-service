@@ -9,6 +9,7 @@ use App\Endpoint\Temporal\Workflow\DTO\CreateRequest;
 use App\Endpoint\Temporal\Workflow\DTO\DriverRateRequest;
 use App\Endpoint\Temporal\Workflow\DTO\DriverStatus;
 use App\Endpoint\Temporal\Workflow\DTO\UserRateRequest;
+use App\Endpoint\Temporal\Workflow\TaskQueue;
 use Ramsey\Uuid\UuidInterface;
 use Spiral\TemporalBridge\Attribute\AssignWorker;
 use Taxi\DriverLocation;
@@ -20,7 +21,7 @@ use Temporal\Activity\ActivityInterface;
 use Temporal\Activity\ActivityMethod;
 use Temporal\Support\VirtualPromise;
 
-#[AssignWorker('taxi-service')]
+#[AssignWorker(TaskQueue::TAXI_SERVICE)]
 #[ActivityInterface(prefix: "taxi-request.")]
 final readonly class TaxiRequestActivity
 {

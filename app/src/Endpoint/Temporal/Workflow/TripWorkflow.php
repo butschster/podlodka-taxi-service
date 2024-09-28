@@ -6,19 +6,19 @@ namespace App\Endpoint\Temporal\Workflow;
 
 use App\Endpoint\Temporal\Activity\NotificationServiceActivity;
 use App\Endpoint\Temporal\Activity\TaxiRequestActivity;
-use App\Endpoint\Temporal\Workflow\DTO\DriverRateRequest;
 use App\Endpoint\Temporal\Workflow\DTO\StartTripRequest;
-use App\Endpoint\Temporal\Workflow\DTO\UserRateRequest;
 use Carbon\CarbonInterval;
 use Spiral\TemporalBridge\Attribute\AssignWorker;
 use Taxi\DriverLocation;
+use Taxi\Exception\DriverLocationNotFoundException;
 use Taxi\Trip;
 use Temporal\Activity\ActivityOptions;
+use Temporal\Common\RetryOptions;
 use Temporal\Internal\Workflow\ActivityProxy;
 use Temporal\Support\VirtualPromise;
 use Temporal\Workflow;
 
-#[AssignWorker('taxi-service')]
+#[AssignWorker(TaskQueue::TAXI_SERVICE)]
 #[Workflow\WorkflowInterface]
 final class TripWorkflow
 {
@@ -35,14 +35,24 @@ final class TripWorkflow
             TaxiRequestActivity::class,
             ActivityOptions::new()
                 ->withStartToCloseTimeout(CarbonInterval::minute())
-                ->withTaskQueue('taxi-service'),
+                ->withTaskQueue(TaskQueue::TAXI_SERVICE)
+                ->withRetryOptions(
+                    RetryOptions::new()
+                        ->withMaximumAttempts(2)
+                        ->withBackoffCoefficient(1.5),
+                ),
         );
 
         $this->notificationService = Workflow::newActivityStub(
             NotificationServiceActivity::class,
             ActivityOptions::new()
                 ->withStartToCloseTimeout(CarbonInterval::minutes(5))
-                ->withTaskQueue('payment-service'),
+                ->withTaskQueue(TaskQueue::NOTIFICATION_SERVICE)
+                ->withRetryOptions(
+                    RetryOptions::new()
+                        ->withMaximumAttempts(5)
+                        ->withBackoffCoefficient(1.5),
+                ),
         );
     }
 
@@ -59,7 +69,7 @@ final class TripWorkflow
 
         while (true) {
             $isEvent = yield Workflow::awaitWithTimeout(
-                // TODO: use estimated time to destination
+            // TODO: use estimated time to destination
                 CarbonInterval::minutes(60),
                 fn() => $this->finished,
                 fn() => $this->queue !== [],
@@ -79,8 +89,7 @@ final class TripWorkflow
                     // Handle the situation manually
 
                     yield $this->notificationService->driverNotResponding($request->taxiRequestUuid);
-
-                    break;
+                    throw new DriverLocationNotFoundException('Driver is not responding');
                 }
 
                 $triesToAskDriver++;
@@ -90,12 +99,12 @@ final class TripWorkflow
             if ($this->finished) {
                 // Update trip status in the database
                 // Send notification to the user
-                $currentTime = yield Workflow::sideEffect(fn() => new \DateTimeImmutable());
+                $currentTime = yield Workflow::now();
 
                 yield $this->notificationService->tripFinished($request->taxiRequestUuid);
 
                 $trip = yield $this->taxiOrdering->finishTrip(
-                    $request->taxiRequestUuid,
+                    $trip->uuid,
                     $currentTime,
                     $this->driverLocation,
                 );
@@ -103,14 +112,10 @@ final class TripWorkflow
             }
 
             while ($this->queue !== []) {
-                $request = \array_shift($this->queue);
+                $dto = \array_shift($this->queue);
 
-                if ($request instanceof UserRateRequest) {
-                    $trip = yield $this->taxiOrdering->rateUser($trip->uuid, $request);
-                } elseif ($request instanceof DriverRateRequest) {
-                    $trip = yield $this->taxiOrdering->rateDriver($trip->uuid, $request);
-                } elseif ($request instanceof DriverLocation) {
-                    $this->driverLocation = $request;
+                if ($dto instanceof DriverLocation) {
+                    $this->driverLocation = $dto;
                 }
             }
         }

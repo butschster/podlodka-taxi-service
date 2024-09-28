@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "85b0b07353d443cb8a039cc2496abb85",
+    "content-hash": "7fa96a37e967abf5083b3bf63a5b81cf",
     "packages": [
         {
             "name": "brick/math",
@@ -887,6 +887,139 @@
             "time": "2023-06-19T06:10:36+00:00"
         },
         {
+            "name": "doctrine/collections",
+            "version": "2.2.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/doctrine/collections.git",
+                "reference": "d8af7f248c74f195f7347424600fd9e17b57af59"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/doctrine/collections/zipball/d8af7f248c74f195f7347424600fd9e17b57af59",
+                "reference": "d8af7f248c74f195f7347424600fd9e17b57af59",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/deprecations": "^1",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "doctrine/coding-standard": "^12",
+                "ext-json": "*",
+                "phpstan/phpstan": "^1.8",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpunit/phpunit": "^10.5",
+                "vimeo/psalm": "^5.11"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Doctrine\\Common\\Collections\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Guilherme Blanco",
+                    "email": "guilhermeblanco@gmail.com"
+                },
+                {
+                    "name": "Roman Borschel",
+                    "email": "roman@code-factory.org"
+                },
+                {
+                    "name": "Benjamin Eberlei",
+                    "email": "kontakt@beberlei.de"
+                },
+                {
+                    "name": "Jonathan Wage",
+                    "email": "jonwage@gmail.com"
+                },
+                {
+                    "name": "Johannes Schmitt",
+                    "email": "schmittjoh@gmail.com"
+                }
+            ],
+            "description": "PHP Doctrine Collections library that adds additional functionality on top of PHP arrays.",
+            "homepage": "https://www.doctrine-project.org/projects/collections.html",
+            "keywords": [
+                "array",
+                "collections",
+                "iterators",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/doctrine/collections/issues",
+                "source": "https://github.com/doctrine/collections/tree/2.2.2"
+            },
+            "funding": [
+                {
+                    "url": "https://www.doctrine-project.org/sponsorship.html",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://www.patreon.com/phpdoctrine",
+                    "type": "patreon"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Fcollections",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-04-18T06:56:21+00:00"
+        },
+        {
+            "name": "doctrine/deprecations",
+            "version": "1.1.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/doctrine/deprecations.git",
+                "reference": "dfbaa3c2d2e9a9df1118213f3b8b0c597bb99fab"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/dfbaa3c2d2e9a9df1118213f3b8b0c597bb99fab",
+                "reference": "dfbaa3c2d2e9a9df1118213f3b8b0c597bb99fab",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1 || ^8.0"
+            },
+            "require-dev": {
+                "doctrine/coding-standard": "^9",
+                "phpstan/phpstan": "1.4.10 || 1.10.15",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
+                "psalm/plugin-phpunit": "0.18.4",
+                "psr/log": "^1 || ^2 || ^3",
+                "vimeo/psalm": "4.30.0 || 5.12.0"
+            },
+            "suggest": {
+                "psr/log": "Allows logging deprecations via PSR-3 logger implementation"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Doctrine\\Deprecations\\": "lib/Doctrine/Deprecations"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A small layer on top of trigger_error(E_USER_DEPRECATED) or PSR-3 logging with options to disable all deprecations or selectively for packages.",
+            "homepage": "https://www.doctrine-project.org/",
+            "support": {
+                "issues": "https://github.com/doctrine/deprecations/issues",
+                "source": "https://github.com/doctrine/deprecations/tree/1.1.3"
+            },
+            "time": "2024-01-30T19:34:25+00:00"
+        },
+        {
             "name": "doctrine/inflector",
             "version": "2.0.10",
             "source": {
@@ -1252,16 +1385,16 @@
         },
         {
             "name": "google/protobuf",
-            "version": "v4.28.0",
+            "version": "v4.28.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/protocolbuffers/protobuf-php.git",
-                "reference": "17e3d804bf6631c2744c99575698f9cd4878b84f"
+                "reference": "80c95a932b0323d40a1cbcfdac721a0dffb23e12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/protocolbuffers/protobuf-php/zipball/17e3d804bf6631c2744c99575698f9cd4878b84f",
-                "reference": "17e3d804bf6631c2744c99575698f9cd4878b84f",
+                "url": "https://api.github.com/repos/protocolbuffers/protobuf-php/zipball/80c95a932b0323d40a1cbcfdac721a0dffb23e12",
+                "reference": "80c95a932b0323d40a1cbcfdac721a0dffb23e12",
                 "shasum": ""
             },
             "require": {
@@ -1290,9 +1423,9 @@
                 "proto"
             ],
             "support": {
-                "source": "https://github.com/protocolbuffers/protobuf-php/tree/v4.28.0"
+                "source": "https://github.com/protocolbuffers/protobuf-php/tree/v4.28.1"
             },
-            "time": "2024-08-28T17:54:02+00:00"
+            "time": "2024-09-11T15:26:51+00:00"
         },
         {
             "name": "graham-campbell/result-type",
@@ -3163,16 +3296,16 @@
         },
         {
             "name": "psr/log",
-            "version": "3.0.1",
+            "version": "3.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "79dff0b268932c640297f5208d6298f71855c03e"
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/79dff0b268932c640297f5208d6298f71855c03e",
-                "reference": "79dff0b268932c640297f5208d6298f71855c03e",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
                 "shasum": ""
             },
             "require": {
@@ -3207,9 +3340,9 @@
                 "psr-3"
             ],
             "support": {
-                "source": "https://github.com/php-fig/log/tree/3.0.1"
+                "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
-            "time": "2024-08-21T13:31:24+00:00"
+            "time": "2024-09-11T13:17:53+00:00"
         },
         {
             "name": "psr/simple-cache",
@@ -4117,16 +4250,16 @@
         },
         {
             "name": "spiral/cycle-bridge",
-            "version": "v2.9.0",
+            "version": "v2.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spiral/cycle-bridge.git",
-                "reference": "e0bda2ca40c696ecd82de3d49fb32b40307bc63b"
+                "reference": "515ca53255390582c70b5b1748fc901a752144e8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spiral/cycle-bridge/zipball/e0bda2ca40c696ecd82de3d49fb32b40307bc63b",
-                "reference": "e0bda2ca40c696ecd82de3d49fb32b40307bc63b",
+                "url": "https://api.github.com/repos/spiral/cycle-bridge/zipball/515ca53255390582c70b5b1748fc901a752144e8",
+                "reference": "515ca53255390582c70b5b1748fc901a752144e8",
                 "shasum": ""
             },
             "require": {
@@ -4192,7 +4325,7 @@
                 "issues": "https://github.com/spiral/framework/issues",
                 "source": "https://github.com/spiral/cycle-bridge"
             },
-            "time": "2024-01-10T11:33:51+00:00"
+            "time": "2024-09-16T06:33:22+00:00"
         },
         {
             "name": "spiral/data-grid",
@@ -4311,16 +4444,16 @@
         },
         {
             "name": "spiral/framework",
-            "version": "3.14.2",
+            "version": "3.14.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spiral/framework.git",
-                "reference": "0c451194557114a247f7a90b563836b92a8b2728"
+                "reference": "8b847ac0a57fd1c8329809a1672f63f2ff2603ee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spiral/framework/zipball/0c451194557114a247f7a90b563836b92a8b2728",
-                "reference": "0c451194557114a247f7a90b563836b92a8b2728",
+                "url": "https://api.github.com/repos/spiral/framework/zipball/8b847ac0a57fd1c8329809a1672f63f2ff2603ee",
+                "reference": "8b847ac0a57fd1c8329809a1672f63f2ff2603ee",
                 "shasum": ""
             },
             "require": {
@@ -4533,7 +4666,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-09-10T16:54:09+00:00"
+            "time": "2024-09-11T17:39:31+00:00"
         },
         {
             "name": "spiral/goridge",
@@ -4624,16 +4757,16 @@
         },
         {
             "name": "spiral/roadrunner",
-            "version": "v2024.2.0",
+            "version": "v2024.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/roadrunner-server/roadrunner.git",
-                "reference": "9f770b1d89c50f332c197139b6fb279b0d47d1e3"
+                "reference": "651cb40d300e5594b0d69648c20233795c99c9c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/roadrunner-server/roadrunner/zipball/9f770b1d89c50f332c197139b6fb279b0d47d1e3",
-                "reference": "9f770b1d89c50f332c197139b6fb279b0d47d1e3",
+                "url": "https://api.github.com/repos/roadrunner-server/roadrunner/zipball/651cb40d300e5594b0d69648c20233795c99c9c9",
+                "reference": "651cb40d300e5594b0d69648c20233795c99c9c9",
                 "shasum": ""
             },
             "type": "metapackage",
@@ -4662,7 +4795,7 @@
                 "docs": "https://roadrunner.dev/docs",
                 "forum": "https://forum.roadrunner.dev/",
                 "issues": "https://github.com/roadrunner-server/roadrunner/issues",
-                "source": "https://github.com/roadrunner-server/roadrunner/tree/v2024.2.0"
+                "source": "https://github.com/roadrunner-server/roadrunner/tree/v2024.2.1"
             },
             "funding": [
                 {
@@ -4670,7 +4803,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-07-25T13:11:40+00:00"
+            "time": "2024-09-12T16:07:07+00:00"
         },
         {
             "name": "spiral/roadrunner-bridge",
@@ -5471,31 +5604,33 @@
         },
         {
             "name": "spiral/temporal-bridge",
-            "version": "3.2.0",
+            "version": "3.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spiral/temporal-bridge.git",
-                "reference": "866f3c38af87cbca2315a2698b80e820986ca4a2"
+                "reference": "eec5051bedeb834d5514fb15b572c6eac13c94bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spiral/temporal-bridge/zipball/866f3c38af87cbca2315a2698b80e820986ca4a2",
-                "reference": "866f3c38af87cbca2315a2698b80e820986ca4a2",
+                "url": "https://api.github.com/repos/spiral/temporal-bridge/zipball/eec5051bedeb834d5514fb15b572c6eac13c94bb",
+                "reference": "eec5051bedeb834d5514fb15b572c6eac13c94bb",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.1",
                 "spiral/attributes": "^2.8 || ^3.1.5",
-                "spiral/boot": "^3.13",
-                "spiral/roadrunner-bridge": "^2.0 || ^3.6",
-                "spiral/scaffolder": "^3.13",
-                "spiral/tokenizer": "^3.13",
+                "spiral/boot": "^3.14",
+                "spiral/core": "^3.14",
+                "spiral/roadrunner-bridge": "^3.7 || ^4.0",
+                "spiral/scaffolder": "^3.14",
+                "spiral/tokenizer": "^3.14",
                 "temporal/sdk": "^2.10"
             },
             "require-dev": {
-                "spiral/framework": "^3.13",
+                "spiral/dumper": "^3.3",
+                "spiral/framework": "^3.14",
                 "spiral/testing": "^2.8",
-                "vimeo/psalm": "^5.23"
+                "vimeo/psalm": "^5.26"
             },
             "type": "library",
             "extra": {
@@ -5544,7 +5679,6 @@
             "support": {
                 "chat": "https://discord.gg/V6EK4he",
                 "docs": "https://spiral.dev/docs",
-                "forum": "https://forum.spiral.dev",
                 "issues": "https://github.com/spiral/temporal-bridge/issues",
                 "source": "https://github.com/spiral/temporal-bridge"
             },
@@ -5554,7 +5688,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-09-02T07:22:20+00:00"
+            "time": "2024-09-10T19:45:15+00:00"
         },
         {
             "name": "symfony/clock",
@@ -8089,6 +8223,57 @@
             "time": "2024-06-23T14:24:42+00:00"
         },
         {
+            "name": "butschster/entity-faker",
+            "version": "v2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/butschster/entity-faker.git",
+                "reference": "64349ff1e9d7f96aacc99781ea18db163ee366ab"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/butschster/entity-faker/zipball/64349ff1e9d7f96aacc99781ea18db163ee366ab",
+                "reference": "64349ff1e9d7f96aacc99781ea18db163ee366ab",
+                "shasum": ""
+            },
+            "require-dev": {
+                "fakerphp/faker": "^1.19",
+                "laminas/laminas-hydrator": "^4.2",
+                "mockery/mockery": "^1.5",
+                "php": "^8.1",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Butschster\\Tests\\": "tests",
+                    "Butschster\\EntityFaker\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pavel Buchnev",
+                    "email": "butschster@gmail.com"
+                }
+            ],
+            "description": "Create fake entities based on your classes",
+            "keywords": [
+                "entity-generator",
+                "faker",
+                "php",
+                "seeder"
+            ],
+            "support": {
+                "issues": "https://github.com/butschster/entity-faker/issues",
+                "source": "https://github.com/butschster/entity-faker/tree/v2.0.0"
+            },
+            "time": "2022-07-13T20:13:15+00:00"
+        },
+        {
             "name": "composer/pcre",
             "version": "3.3.1",
             "source": {
@@ -8271,51 +8456,67 @@
             "time": "2019-12-04T15:06:13+00:00"
         },
         {
-            "name": "doctrine/deprecations",
-            "version": "1.1.3",
+            "name": "fakerphp/faker",
+            "version": "v1.23.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/doctrine/deprecations.git",
-                "reference": "dfbaa3c2d2e9a9df1118213f3b8b0c597bb99fab"
+                "url": "https://github.com/FakerPHP/Faker.git",
+                "reference": "bfb4fe148adbf78eff521199619b93a52ae3554b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/dfbaa3c2d2e9a9df1118213f3b8b0c597bb99fab",
-                "reference": "dfbaa3c2d2e9a9df1118213f3b8b0c597bb99fab",
+                "url": "https://api.github.com/repos/FakerPHP/Faker/zipball/bfb4fe148adbf78eff521199619b93a52ae3554b",
+                "reference": "bfb4fe148adbf78eff521199619b93a52ae3554b",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.1 || ^8.0"
+                "php": "^7.4 || ^8.0",
+                "psr/container": "^1.0 || ^2.0",
+                "symfony/deprecation-contracts": "^2.2 || ^3.0"
+            },
+            "conflict": {
+                "fzaninotto/faker": "*"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^9",
-                "phpstan/phpstan": "1.4.10 || 1.10.15",
-                "phpstan/phpstan-phpunit": "^1.0",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
-                "psalm/plugin-phpunit": "0.18.4",
-                "psr/log": "^1 || ^2 || ^3",
-                "vimeo/psalm": "4.30.0 || 5.12.0"
+                "bamarni/composer-bin-plugin": "^1.4.1",
+                "doctrine/persistence": "^1.3 || ^2.0",
+                "ext-intl": "*",
+                "phpunit/phpunit": "^9.5.26",
+                "symfony/phpunit-bridge": "^5.4.16"
             },
             "suggest": {
-                "psr/log": "Allows logging deprecations via PSR-3 logger implementation"
+                "doctrine/orm": "Required to use Faker\\ORM\\Doctrine",
+                "ext-curl": "Required by Faker\\Provider\\Image to download images.",
+                "ext-dom": "Required by Faker\\Provider\\HtmlLorem for generating random HTML.",
+                "ext-iconv": "Required by Faker\\Provider\\ru_RU\\Text::realText() for generating real Russian text.",
+                "ext-mbstring": "Required for multibyte Unicode string functionality."
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Doctrine\\Deprecations\\": "lib/Doctrine/Deprecations"
+                    "Faker\\": "src/Faker/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
-            "description": "A small layer on top of trigger_error(E_USER_DEPRECATED) or PSR-3 logging with options to disable all deprecations or selectively for packages.",
-            "homepage": "https://www.doctrine-project.org/",
+            "authors": [
+                {
+                    "name": "François Zaninotto"
+                }
+            ],
+            "description": "Faker is a PHP library that generates fake data for you.",
+            "keywords": [
+                "data",
+                "faker",
+                "fixtures"
+            ],
             "support": {
-                "issues": "https://github.com/doctrine/deprecations/issues",
-                "source": "https://github.com/doctrine/deprecations/tree/1.1.3"
+                "issues": "https://github.com/FakerPHP/Faker/issues",
+                "source": "https://github.com/FakerPHP/Faker/tree/v1.23.1"
             },
-            "time": "2024-01-30T19:34:25+00:00"
+            "time": "2024-01-02T13:46:09+00:00"
         },
         {
             "name": "felixfbecker/advanced-json-rpc",
@@ -8529,6 +8730,142 @@
                 "source": "https://github.com/hamcrest/hamcrest-php/tree/v2.0.1"
             },
             "time": "2020-07-09T08:09:16+00:00"
+        },
+        {
+            "name": "laminas/laminas-hydrator",
+            "version": "4.15.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laminas/laminas-hydrator.git",
+                "reference": "43ccca88313fdcceca37865109dffc69ecd2cf8f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laminas/laminas-hydrator/zipball/43ccca88313fdcceca37865109dffc69ecd2cf8f",
+                "reference": "43ccca88313fdcceca37865109dffc69ecd2cf8f",
+                "shasum": ""
+            },
+            "require": {
+                "laminas/laminas-stdlib": "^3.3",
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+                "webmozart/assert": "^1.10"
+            },
+            "conflict": {
+                "laminas/laminas-servicemanager": "<3.14.0",
+                "zendframework/zend-hydrator": "*"
+            },
+            "require-dev": {
+                "laminas/laminas-coding-standard": "~2.5.0",
+                "laminas/laminas-eventmanager": "^3.12",
+                "laminas/laminas-modulemanager": "^2.15.0",
+                "laminas/laminas-serializer": "^2.17.0",
+                "laminas/laminas-servicemanager": "^3.22.1",
+                "phpbench/phpbench": "^1.2.14",
+                "phpunit/phpunit": "^10.4.2",
+                "psalm/plugin-phpunit": "^0.18.4",
+                "vimeo/psalm": "^5.15"
+            },
+            "suggest": {
+                "laminas/laminas-eventmanager": "^3.2, to support aggregate hydrator usage",
+                "laminas/laminas-serializer": "^2.9, to use the SerializableStrategy",
+                "laminas/laminas-servicemanager": "^3.14, to support hydrator plugin manager usage"
+            },
+            "type": "library",
+            "extra": {
+                "laminas": {
+                    "component": "Laminas\\Hydrator",
+                    "config-provider": "Laminas\\Hydrator\\ConfigProvider"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Laminas\\Hydrator\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Serialize objects to arrays, and vice versa",
+            "homepage": "https://laminas.dev",
+            "keywords": [
+                "hydrator",
+                "laminas"
+            ],
+            "support": {
+                "chat": "https://laminas.dev/chat",
+                "docs": "https://docs.laminas.dev/laminas-hydrator/",
+                "forum": "https://discourse.laminas.dev",
+                "issues": "https://github.com/laminas/laminas-hydrator/issues",
+                "rss": "https://github.com/laminas/laminas-hydrator/releases.atom",
+                "source": "https://github.com/laminas/laminas-hydrator"
+            },
+            "funding": [
+                {
+                    "url": "https://funding.communitybridge.org/projects/laminas-project",
+                    "type": "community_bridge"
+                }
+            ],
+            "time": "2023-11-08T11:11:45+00:00"
+        },
+        {
+            "name": "laminas/laminas-stdlib",
+            "version": "3.19.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laminas/laminas-stdlib.git",
+                "reference": "6a192dd0882b514e45506f533b833b623b78fff3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laminas/laminas-stdlib/zipball/6a192dd0882b514e45506f533b833b623b78fff3",
+                "reference": "6a192dd0882b514e45506f533b833b623b78fff3",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0"
+            },
+            "conflict": {
+                "zendframework/zend-stdlib": "*"
+            },
+            "require-dev": {
+                "laminas/laminas-coding-standard": "^2.5",
+                "phpbench/phpbench": "^1.2.15",
+                "phpunit/phpunit": "^10.5.8",
+                "psalm/plugin-phpunit": "^0.18.4",
+                "vimeo/psalm": "^5.20.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Laminas\\Stdlib\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "SPL extensions, array utilities, error handlers, and more",
+            "homepage": "https://laminas.dev",
+            "keywords": [
+                "laminas",
+                "stdlib"
+            ],
+            "support": {
+                "chat": "https://laminas.dev/chat",
+                "docs": "https://docs.laminas.dev/laminas-stdlib/",
+                "forum": "https://discourse.laminas.dev",
+                "issues": "https://github.com/laminas/laminas-stdlib/issues",
+                "rss": "https://github.com/laminas/laminas-stdlib/releases.atom",
+                "source": "https://github.com/laminas/laminas-stdlib"
+            },
+            "funding": [
+                {
+                    "url": "https://funding.communitybridge.org/projects/laminas-project",
+                    "type": "community_bridge"
+                }
+            ],
+            "time": "2024-01-19T12:39:49+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -9493,16 +9830,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "10.5.33",
+            "version": "10.5.34",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "4def7a9cda75af9c2bc179ed53a8e41313e7f7cf"
+                "reference": "3c69d315bdf79080c8e115b69d1961c6905b0e18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/4def7a9cda75af9c2bc179ed53a8e41313e7f7cf",
-                "reference": "4def7a9cda75af9c2bc179ed53a8e41313e7f7cf",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3c69d315bdf79080c8e115b69d1961c6905b0e18",
+                "reference": "3c69d315bdf79080c8e115b69d1961c6905b0e18",
                 "shasum": ""
             },
             "require": {
@@ -9574,7 +9911,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.33"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.34"
             },
             "funding": [
                 {
@@ -9590,7 +9927,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-09T06:06:56+00:00"
+            "time": "2024-09-13T05:19:38+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -10577,17 +10914,107 @@
             "time": "2024-05-01T10:20:27+00:00"
         },
         {
-            "name": "spiral/testing",
-            "version": "2.8.0",
+            "name": "spiral-packages/database-seeder",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/spiral/testing.git",
-                "reference": "6fcd738cec99a96432da3c5a9987d553490f557b"
+                "url": "https://github.com/spiral-packages/database-seeder.git",
+                "reference": "361c64fc29357be95f85cf9172aca5fa26d4a610"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spiral/testing/zipball/6fcd738cec99a96432da3c5a9987d553490f557b",
-                "reference": "6fcd738cec99a96432da3c5a9987d553490f557b",
+                "url": "https://api.github.com/repos/spiral-packages/database-seeder/zipball/361c64fc29357be95f85cf9172aca5fa26d4a610",
+                "reference": "361c64fc29357be95f85cf9172aca5fa26d4a610",
+                "shasum": ""
+            },
+            "require": {
+                "butschster/entity-faker": "^2.0",
+                "fakerphp/faker": "^1.23",
+                "laminas/laminas-hydrator": "^4.3",
+                "php": "^8.1",
+                "spiral/attributes": "^2.0 || ^3.1.2",
+                "spiral/boot": "^3.8",
+                "spiral/console": "^3.8",
+                "spiral/scaffolder": "^3.8"
+            },
+            "require-dev": {
+                "cycle/database": "^2.6",
+                "mockery/mockery": "^1.6",
+                "phpunit/phpunit": "^10.3",
+                "spiral/cycle-bridge": "^2.5",
+                "spiral/framework": "^3.8",
+                "spiral/testing": "^2.6",
+                "vimeo/psalm": "^5.15"
+            },
+            "suggest": {
+                "spiral/cycle-bridge": "For easy database and ORM configuration in a test application",
+                "spiral/testing": "To use the Spiral\\DatabaseSeeder\\TestCase class and helpers to test an app with DB"
+            },
+            "type": "library",
+            "extra": {
+                "spiral": {
+                    "bootloaders": [
+                        "Spiral\\DatabaseSeeder\\Bootloader\\DatabaseSeederBootloader"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Spiral\\DatabaseSeeder\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Anton Titov (wolfy-j)",
+                    "email": "wolfy-j@spiralscout.com"
+                },
+                {
+                    "name": "Pavel Buchnev (butschster)",
+                    "email": "pavel.buchnev@spiralscout.com"
+                },
+                {
+                    "name": "Aleksei Gagarin (roxblnfk)",
+                    "email": "alexey.gagarin@spiralscout.com"
+                },
+                {
+                    "name": "Maksim Smakouz (msmakouz)",
+                    "email": "maksim.smakouz@spiralscout.com"
+                },
+                {
+                    "name": "Spiral Community",
+                    "homepage": "https://github.com/spiral/framework/graphs/contributors"
+                }
+            ],
+            "description": "The package provides the ability to seed your database with data using seed classes",
+            "homepage": "https://github.com/spiral-packages/database-seeder",
+            "keywords": [
+                "database-seeder",
+                "seeder",
+                "spiral",
+                "spiral-packages"
+            ],
+            "support": {
+                "issues": "https://github.com/spiral-packages/database-seeder/issues",
+                "source": "https://github.com/spiral-packages/database-seeder/tree/3.2.0"
+            },
+            "time": "2024-01-19T07:08:48+00:00"
+        },
+        {
+            "name": "spiral/testing",
+            "version": "2.8.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spiral/testing.git",
+                "reference": "a543ce70e8ed02b999077424cf6edb6b6193b961"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spiral/testing/zipball/a543ce70e8ed02b999077424cf6edb6b6193b961",
+                "reference": "a543ce70e8ed02b999077424cf6edb6b6193b961",
                 "shasum": ""
             },
             "require": {
@@ -10596,29 +11023,30 @@
                 "nyholm/psr7": "^1.5",
                 "php": ">=8.1",
                 "phpunit/phpunit": "^9.6 || ^10.0",
-                "spiral/auth": "^3.12",
-                "spiral/auth-http": "^3.12",
-                "spiral/boot": "^3.12",
-                "spiral/console": "^3.12",
-                "spiral/core": "^3.12",
-                "spiral/events": "^3.12",
-                "spiral/http": "^3.12",
-                "spiral/mailer": "^3.12",
-                "spiral/queue": "^3.12",
-                "spiral/scaffolder": "^3.12",
-                "spiral/security": "^3.12",
-                "spiral/session": "^3.12",
-                "spiral/storage": "^3.12",
-                "spiral/tokenizer": "^3.12",
-                "spiral/translator": "^3.12",
-                "spiral/views": "^3.12",
+                "spiral/auth": "^3.14.3",
+                "spiral/auth-http": "^3.14.3",
+                "spiral/boot": "^3.14.3",
+                "spiral/console": "^3.14.3",
+                "spiral/core": "^3.14.3",
+                "spiral/events": "^3.14.3",
+                "spiral/http": "^3.14.3",
+                "spiral/mailer": "^3.14.3",
+                "spiral/queue": "^3.14.3",
+                "spiral/scaffolder": "^3.14.3",
+                "spiral/security": "^3.14.3",
+                "spiral/session": "^3.14.3",
+                "spiral/storage": "^3.14.3",
+                "spiral/tokenizer": "^3.14.3",
+                "spiral/translator": "^3.14.3",
+                "spiral/views": "^3.14.3",
                 "symfony/mime": "^6.0 || ^7.0"
             },
             "require-dev": {
                 "spiral-packages/league-event": "^1.0.1",
-                "spiral/framework": "^3.12",
-                "spiral/nyholm-bridge": "^1.2",
-                "spiral/roadrunner-bridge": "^2.2 || ^3.0",
+                "spiral/dumper": "^3.3",
+                "spiral/framework": "^3.14.3",
+                "spiral/nyholm-bridge": "^1.3",
+                "spiral/roadrunner-bridge": "^2.2 || ^3.7 || ^4.0",
                 "vimeo/psalm": "^5.9"
             },
             "suggest": {
@@ -10669,7 +11097,7 @@
                 "docs": "https://spiral.dev/docs/testing-start",
                 "forum": "https://forum.roadrunner.dev/",
                 "issues": "https://github.com/spiral/testing/issues",
-                "source": "https://github.com/spiral/testing/tree/2.8.0"
+                "source": "https://github.com/spiral/testing/tree/2.8.1"
             },
             "funding": [
                 {
@@ -10677,7 +11105,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-05-07T07:08:53+00:00"
+            "time": "2024-09-13T12:00:03+00:00"
         },
         {
             "name": "symfony/var-dumper",
@@ -11058,8 +11486,8 @@
     "prefer-lowest": false,
     "platform": {
         "php": ">=8.3",
-        "ext-sockets": "*",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "ext-sockets": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.6.0"

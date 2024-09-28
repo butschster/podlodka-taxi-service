@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Endpoint\Temporal\Activity;
 
+use App\Endpoint\Temporal\Workflow\TaskQueue;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\UuidInterface;
 use Spiral\TemporalBridge\Attribute\AssignWorker;
@@ -11,7 +12,7 @@ use Temporal\Activity\ActivityInterface;
 use Temporal\Activity\ActivityMethod;
 use Temporal\Support\VirtualPromise;
 
-#[AssignWorker('notification-service')]
+#[AssignWorker(TaskQueue::NOTIFICATION_SERVICE)]
 #[ActivityInterface(prefix: "notification-request.")]
 final readonly class NotificationServiceActivity
 {
@@ -77,6 +78,26 @@ final readonly class NotificationServiceActivity
     {
         // Send push notification to driver that he was not selected
         $this->logger->info('Driver was not selected');
+    }
+
+    /**
+     * @return VirtualPromise<void>
+     */
+    #[ActivityMethod]
+    public function stillSearching(UuidInterface $taxiRequestUuid): void
+    {
+        // Send push notification to user
+        $this->logger->info('Still searching for a driver');
+    }
+
+    /**
+     * @return VirtualPromise<void>
+     */
+    #[ActivityMethod]
+    public function insufficientFunds(UuidInterface $taxiRequestUuid): void
+    {
+        // Send push notification to user
+        $this->logger->info('Insufficient funds');
     }
 
     /**

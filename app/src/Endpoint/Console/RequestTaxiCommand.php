@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Endpoint\Console;
 
 use App\Endpoint\Temporal\Workflow\DTO\CreateRequest;
+use App\Endpoint\Temporal\Workflow\TaskQueue;
 use App\Endpoint\Temporal\Workflow\TaxiRequestWorkflow;
 use Ramsey\Uuid\Uuid;
 use Spiral\Console\Attribute\AsCommand;
@@ -20,8 +21,20 @@ final class RequestTaxiCommand extends Command
 {
     public function __invoke(WorkflowClientInterface $client): int
     {
-        $userUuid = Uuid::uuid7();
+        $userUuid = Uuid::fromString('0191f9a0-87e0-72c2-aed9-ce3905267238');
         $requestUuid = Uuid::uuid4();
+
+        $this->info('Requesting a taxi...');
+        $this->info('Request UUID: ' . $requestUuid->toString());
+
+        $this->warning('1. Run the following command to accept the request:');
+        $this->info('php app.php t:r:accept ' . $requestUuid->toString());
+
+        $this->warning('2. Run the following command to update the driver location:');
+        $this->info('php app.php t:r:update-location ' . $requestUuid->toString());
+
+        $this->warning('3. Run the following command to finish the request:');
+        $this->info('php app.php t:r:finish ' . $requestUuid->toString());
 
         $client->newWorkflowStub(
             TaxiRequestWorkflow::class,
@@ -31,7 +44,7 @@ final class RequestTaxiCommand extends Command
                 ->withWorkflowId((string) $requestUuid)
                 // Disallow duplicate workflows with the same ID.
                 ->withWorkflowIdReusePolicy(IdReusePolicy::AllowDuplicateFailedOnly)
-                ->withTaskQueue('taxi-service'),
+                ->withTaskQueue(TaskQueue::TAXI_SERVICE),
         )->createRequest(
             new CreateRequest(
                 requestUuid: $requestUuid,

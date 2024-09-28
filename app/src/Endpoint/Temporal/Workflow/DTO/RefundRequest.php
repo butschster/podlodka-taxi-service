@@ -9,6 +9,7 @@ use Ramsey\Uuid\UuidInterface;
 final readonly class RefundRequest
 {
     public function __construct(
+        public UuidInterface $operationUuid,
         public UuidInterface $userUuid,
         public UuidInterface $transactionUuid,
     ) {}

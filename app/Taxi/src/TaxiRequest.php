@@ -7,12 +7,14 @@ namespace Taxi;
 use App\Infrastructure\CycleORM\Table\TaxiRequestTable;
 use Cycle\Annotated\Annotation\Column;
 use Cycle\Annotated\Annotation\Entity;
-use Cycle\Annotated\Annotation\Relation\HasOne;
+use Cycle\Annotated\Annotation\Relation\HasMany;
+use Doctrine\Common\Collections\ArrayCollection;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Taxi\Exception\DriverUnavailableException;
 use Taxi\Exception\InvalidRequestStatusException;
 use Taxi\Repository\TaxiRequestRepositoryInterface;
+use Taxi\TaxiRequest\Status;
 
 #[Entity(
     role: TaxiRequest::ROLE,
@@ -47,24 +49,28 @@ class TaxiRequest
     #[Column(type: 'string', name: TaxiRequestTable::STATUS, typecast: TaxiRequestStatus::class)]
     public TaxiRequestStatus $status;
 
-    #[HasOne(target: Trip::class, innerKey: self::F_TRIP_UUID, outerKey: Trip::F_UUID, nullable: true)]
-    public ?Trip $trip = null;
+    /** @var ArrayCollection<Status> */
+    #[HasMany(target: Status::class, innerKey: self::F_UUID, outerKey: Status::F_TAXI_REQUEST_UUID)]
+    public ArrayCollection $statuses;
 
     public function __construct(
         #[Column(type: 'uuid', name: TaxiRequestTable::UUID, primary: true, typecast: 'uuid')]
         public UuidInterface $uuid,
         #[Column(type: 'uuid', name: TaxiRequestTable::USER_UUID, typecast: 'uuid')]
         public UuidInterface $userUuid,
-        #[Column(type: 'jsonb', name: TaxiRequestTable::CURRENT_LOCATION)]
+        #[Column(type: 'jsonb', name: TaxiRequestTable::CURRENT_LOCATION, typecast: Location::class)]
         public Location $currentLocation,
-        #[Column(type: 'jsonb', name: TaxiRequestTable::DESTINATION_LOCATION)]
+        #[Column(type: 'jsonb', name: TaxiRequestTable::DESTINATION_LOCATION, typecast: Location::class)]
         public Location $destinationLocation,
         #[Column(type: 'string', name: TaxiRequestTable::VEHICLE_CLASS, typecast: VehicleClass::class)]
         public VehicleClass $vehicleClass,
         #[Column(type: 'float', name: TaxiRequestTable::ESTIMATED_PRICE)]
         public float $estimatedPrice,
     ) {
-        $this->status = TaxiRequestStatus::Pending;
+        $this->statuses = new ArrayCollection();
+
+        $this->setStatus(TaxiRequestStatus::Pending);
+
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -80,18 +86,18 @@ class TaxiRequest
 
     public function accept(UuidInterface $driverUuid): void
     {
-        $this->status = TaxiRequestStatus::Accepted;
+        $this->setStatus(TaxiRequestStatus::Accepted);
         $this->driverUuid = $driverUuid;
     }
 
     public function cancel(string $reason): void
     {
-        $this->status = TaxiRequestStatus::Cancelled;
+        $this->setStatus(TaxiRequestStatus::Cancelled, $reason);
     }
 
     public function complete(\DateTimeImmutable $endTime): void
     {
-        $this->status = TaxiRequestStatus::Completed;
+        $this->setStatus(TaxiRequestStatus::Completed);
         $this->finishedAt = $endTime;
     }
 
@@ -105,14 +111,30 @@ class TaxiRequest
             throw new DriverUnavailableException('Cannot start trip without a driver');
         }
 
-        $this->trip = new Trip(
+        $this->setStatus(TaxiRequestStatus::InProgress);
+
+        return new Trip(
             uuid: Uuid::uuid7(),
             taxiRequestUuid: $this->uuid,
             startTime: new \DateTimeImmutable(),
         );
+    }
 
-        $this->status = TaxiRequestStatus::InProgress;
+    private function setStatus(TaxiRequestStatus $status, ?string $reason = null): void
+    {
+        if (isset($this->status)) {
+            StatusTransitionValidator::validate($this->status, $status);
+        }
 
-        return $trip;
+        $this->status = $status;
+
+        $this->statuses->add(
+            new Status(
+                uuid: Uuid::uuid7(),
+                taxiRequestUuid: $this->uuid,
+                status: $status,
+                reason: $reason,
+            ),
+        );
     }
 }

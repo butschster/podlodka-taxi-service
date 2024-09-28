@@ -9,6 +9,7 @@ use App\Infrastructure\CycleORM\Table\UserTable;
 use Cycle\Annotated\Annotation\Column;
 use Cycle\Annotated\Annotation\Entity;
 use Cycle\Annotated\Annotation\Relation\HasMany;
+use Doctrine\Common\Collections\ArrayCollection;
 use Ramsey\Uuid\UuidInterface;
 use Taxi\Repository\UserRepositoryInterface;
 
@@ -26,9 +27,9 @@ class User
     public const F_PHONE = 'phone';
     public const F_CREATED_AT = 'createdAt';
 
-    /** @var Rating[] */
+    /** @var ArrayCollection<Rating> */
     #[HasMany(target: Rating::class, innerKey: User::F_UUID, outerKey: Rating::F_RECIPIENT_UUID)]
-    private array $ratings = [];
+    private ArrayCollection $ratings;
 
     #[Column(type: 'datetime', name: DriverTable::CREATED_AT)]
     public \DateTimeInterface $createdAt;
@@ -46,17 +47,6 @@ class User
 
     public function addRating(Rating $rating): void
     {
-        $this->ratings[] = $rating;
-    }
-
-    public function getAverageRating(): float
-    {
-        if ($this->ratings === []) {
-            return 0;
-        }
-
-        $ratings = $this->ratings;
-
-        return \array_sum(\array_map(fn(Rating $r) => $r->rating, $ratings)) / \count($ratings);
+        $this->ratings->add($rating);
     }
 }

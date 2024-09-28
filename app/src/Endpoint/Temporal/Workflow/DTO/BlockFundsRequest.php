@@ -9,6 +9,7 @@ use Ramsey\Uuid\UuidInterface;
 final readonly class BlockFundsRequest
 {
     public function __construct(
+        public UuidInterface $operationUuid,
         public UuidInterface $userUuid,
         public float $amount,
     ) {}

@@ -12,26 +12,26 @@ use App\Endpoint\Temporal\Workflow\DTO\AcceptRequest;
 use App\Endpoint\Temporal\Workflow\DTO\BlockFundsRequest;
 use App\Endpoint\Temporal\Workflow\DTO\CancelRequest;
 use App\Endpoint\Temporal\Workflow\DTO\CreateRequest;
-use App\Endpoint\Temporal\Workflow\DTO\DriverRateRequest;
 use App\Endpoint\Temporal\Workflow\DTO\RefundRequest;
 use App\Endpoint\Temporal\Workflow\DTO\StartTripRequest;
-use App\Endpoint\Temporal\Workflow\DTO\UserRateRequest;
 use Carbon\CarbonInterval;
+use Payment\Exception\InsufficientFundsException;
+use Ramsey\Uuid\UuidInterface;
 use Spiral\TemporalBridge\Attribute\AssignWorker;
+use Taxi\Exception\DriverAlreadyAssignedException;
 use Taxi\Exception\TaxiRequestCancelledException;
 use Taxi\TaxiRequest;
-use Taxi\TaxiRequestStatus;
-use Taxi\Trip;
 use Temporal\Activity\ActivityOptions;
 use Temporal\Common\IdReusePolicy;
 use Temporal\Common\RetryOptions;
 use Temporal\Exception\Failure\ActivityFailure;
+use Temporal\Exception\Failure\CanceledFailure;
 use Temporal\Internal\Workflow\ActivityProxy;
 use Temporal\Promise;
 use Temporal\Workflow;
 use Temporal\Workflow\ChildWorkflowOptions;
 
-#[AssignWorker('taxi-service')]
+#[AssignWorker(TaskQueue::TAXI_SERVICE)]
 #[Workflow\WorkflowInterface]
 final class TaxiRequestWorkflow
 {
@@ -39,11 +39,7 @@ final class TaxiRequestWorkflow
     private ActivityProxy|PaymentServiceActivity $paymentService;
     private ActivityProxy|NotificationServiceActivity $notificationService;
 
-    /** @var CancelRequest[]|AcceptRequest[] */
-    private array $queue = [];
-
     private ?TaxiRequest $taxiRequest = null;
-    private ?Trip $trip = null;
 
     public function __construct()
     {
@@ -51,7 +47,12 @@ final class TaxiRequestWorkflow
             TaxiRequestActivity::class,
             ActivityOptions::new()
                 ->withStartToCloseTimeout(CarbonInterval::minute())
-                ->withTaskQueue('taxi-service'),
+                ->withTaskQueue(TaskQueue::TAXI_SERVICE)
+                ->withRetryOptions(
+                    RetryOptions::new()
+                        ->withMaximumAttempts(2)
+                        ->withBackoffCoefficient(1.5),
+                ),
         );
 
         $this->paymentService = Workflow::newActivityStub(
@@ -60,63 +61,66 @@ final class TaxiRequestWorkflow
                 ->withRetryOptions(
                     RetryOptions::new()
                         // We can specify the exceptions that should not be retried
-                        // For example, if server problems are not retryable
-                        // ->withNonRetryableExceptions(\InvalidArgumentException::class)
+                        // For example, if the user doesn't have enough money
+                        ->withNonRetryableExceptions([InsufficientFundsException::class])
                         ->withMaximumAttempts(3)
+                        ->withInitialInterval(CarbonInterval::seconds(5))
                         ->withBackoffCoefficient(1.5),
                 )
                 ->withStartToCloseTimeout(CarbonInterval::minutes(5))
-                ->withTaskQueue('payment-service'),
+                ->withTaskQueue(TaskQueue::PAYMENT_SERVICE),
         );
 
         $this->notificationService = Workflow::newActivityStub(
             NotificationServiceActivity::class,
             ActivityOptions::new()
                 ->withStartToCloseTimeout(CarbonInterval::minutes(5))
-                ->withTaskQueue('payment-service'),
+                ->withRetryOptions(
+                    RetryOptions::new()
+                        ->withMaximumAttempts(2)
+                        ->withBackoffCoefficient(1.5),
+                )
+                ->withTaskQueue(TaskQueue::NOTIFICATION_SERVICE),
         );
     }
 
     private ?AcceptRequest $acceptRequest = null;
-
-    /**
-     * @throws TaxiRequestCacnelledException
-     */
-    private function driverAssigned(): bool
-    {
-        $this->checkRequestStatus();
-
-        return $this->acceptRequest !== null;
-    }
-
     private ?CancelRequest $cancelRequest = null;
-
-    private function checkRequestStatus(): void
-    {
-        if ($this->cancelRequest) {
-            throw new TaxiRequestCacnelledException($this->cancelRequest->reason);
-        }
-    }
 
     #[Workflow\WorkflowMethod]
     public function createRequest(CreateRequest $request)
     {
         // First, we need to create a taxi request
         $this->taxiRequest = yield $this->taxiOrdering->requestTaxi($request);
+        \assert($this->taxiRequest instanceof TaxiRequest);
 
         $requestSaga = new Workflow\Saga();
-        $requestSaga->setParallelCompensation(true);
+        $requestSaga->setParallelCompensation(parallelCompensation: true);
 
+        /** @var UuidInterface $operationUuid */
         $operationUuid = yield Workflow::uuid7();
 
-        // Then we need to block money on user account for the ride
-        $transactionUuid = yield $this->paymentService->blockFunds(
-            new BlockFundsRequest(
-                operationUuid: $operationUuid, // For idempotency
-                userUuid: $request->userUuid,
-                amount: $this->taxiRequest->estimatedPrice,
-            ),
-        );
+        try {
+            // Then we need to block money on user account for the ride
+            /** @var UuidInterface $transactionUuid */
+            $transactionUuid = yield $this->paymentService->blockFunds(
+                new BlockFundsRequest(
+                    operationUuid: $operationUuid, // For idempotency
+                    userUuid: $request->userUuid,
+                    amount: $this->taxiRequest->estimatedPrice,
+                ),
+            );
+        } catch (ActivityFailure $e) {
+            // 1. If user doesn't have enough money, we can notify the user and cancel the request
+            if (ExceptionHelper::findException($e, InsufficientFundsException::class)) {
+                // Notify the user that he doesn't have enough money
+                yield $this->notificationService->insufficientFunds($this->taxiRequest->uuid);
+
+                throw new CanceledFailure('Insufficient funds');
+            }
+
+            throw new CanceledFailure('Something went wrong with the payment. Please try again later');
+        }
 
         // If something goes wrong, we need to refund the money
         $requestSaga->addCompensation(fn() => $this->paymentService->refundFunds(
@@ -130,21 +134,31 @@ final class TaxiRequestWorkflow
         // Notify drivers about the new request
         yield $this->notificationService->newRequest($this->taxiRequest->uuid);
 
+        $assignmentAttempts = 0;
+        $maxAssignmentAttempts = 5;
+
         try {
-            assignDriver:
+            https://temporal.io
 
             // Wait for driver to accept the request
-            while (true) {
+            while ($assignmentAttempts < $maxAssignmentAttempts) {
                 // Wait for 5 minutes for the event to happen
                 // If the event happens earlier, the function will return immediately
                 // If the event doesn't happen in 5 minutes, the function will return false
+                /** @var bool $isAssigned */
                 $isAssigned = yield Workflow::awaitWithTimeout(
-                    CarbonInterval::minutes(5),
+                    CarbonInterval::minute(),
                     fn(): bool => $this->driverAssigned(),
                 );
 
-                // If 5 minutes passed and no driver accepted the request
                 if (!$isAssigned) {
+                    // Notify every minute that we are still searching for the driver. Max 5 attempts (5 minutes)
+                    $assignmentAttempts++;
+                    if ($assignmentAttempts < $maxAssignmentAttempts) {
+                        yield $this->notificationService->stillSearching($request->requestUuid);
+                        continue;
+                    }
+
                     // Scenario to handle:
                     // 1. Assign the request to the nearest available driver
                     // 2. Probably the price is too low, we can increase the price and notify the user
@@ -156,11 +170,31 @@ final class TaxiRequestWorkflow
                     throw new TaxiRequestCancelledException('No driver accepted the request');
                 }
 
+                // Validate the driver
+                $driverIsMatched = yield $this->taxiOrdering->validateDriver(
+                    $this->taxiRequest->uuid,
+                    $this->acceptRequest,
+                );
+
+                // If the driver is not matched, we can notify the user and go to the next iteration
+                if (!$driverIsMatched->isMatched) {
+                    // Notify the user that the driver is not available
+                    yield $this->notificationService->driverMatchFailed(
+                        taxiRequestUuid: $this->taxiRequest->uuid,
+                        driverUuid: $this->acceptRequest->driverUuid,
+                    );
+
+                    $this->acceptRequest = null;
+                    continue;
+                }
+
+                // Assign the driver to the request
                 $this->taxiRequest = yield $this->taxiOrdering->assignDriver(
                     $this->taxiRequest->uuid,
                     $this->acceptRequest->driverUuid,
                 );
 
+                // Notify the user that the driver accepted the request
                 yield $this->notificationService->driverAccepted(
                     $this->taxiRequest->userUuid,
                     $this->acceptRequest->driverUuid,
@@ -169,38 +203,28 @@ final class TaxiRequestWorkflow
                 break;
             }
         } catch (\Throwable $e) {
-            if (ExceptionHelper::shouldBeCompensated($e)) {
-                // Parallel activities execution
-                yield Promise::all([
+            if (ExceptionHelper::shouldBeCanceled($e)) {
+                yield $this->compensate($e, $requestSaga);
 
-                    // Return money to the user
-                    $requestSaga->compensate(),
-
-                    // Notify the user that the request was canceled
-                    $this->notificationService->userCanceled($this->taxiRequest->uuid),
-
-                    // Cancel the request
-                    $this->taxiOrdering->cancelRequest(
-                        $this->taxiRequest->uuid,
-                        $e->getMessage(),
-                    ),
-
-                ]);
+                yield $this->taxiOrdering->cancelRequest(
+                    $this->taxiRequest->uuid,
+                    $e->getMessage(),
+                );
 
                 return;
             }
 
-            goto assignDriver;
+            goto https;
         }
 
         // If the driver accepted the request, we can start the trip
-        $this->trip = yield Workflow::newChildWorkflowStub(
-            TripWorkflow::class,
-            ChildWorkflowOptions::new()
-                ->withWorkflowId($this->taxiRequest->uuid . '-trip')
+        yield Workflow::newChildWorkflowStub(
+            class: TripWorkflow::class,
+            options: ChildWorkflowOptions::new()
+                ->withWorkflowId(workflowId: $this->taxiRequest->uuid . '-trip')
                 // Disallow duplicate workflows with the same ID.
-                ->withWorkflowIdReusePolicy(IdReusePolicy::AllowDuplicateFailedOnly)
-                ->withTaskQueue('taxi-service'),
+                ->withWorkflowIdReusePolicy(policy: IdReusePolicy::AllowDuplicateFailedOnly)
+                ->withTaskQueue(taskQueue: TaskQueue::TAXI_SERVICE),
         )->start(new StartTripRequest($this->taxiRequest->uuid));
 
         yield Promise::all([
@@ -210,46 +234,12 @@ final class TaxiRequestWorkflow
             // Notify user about the trip finish and ask to rate each other
             $this->notificationService->tripFinished($this->taxiRequest->uuid),
         ]);
-
-        // If some of the parties haven't rated each other we can give them some time
-        // to rate each other
-        while ($this->trip->driverRatingUuid === null || $this->trip->userRatingUuid === null) {
-            $isEvent = yield Workflow::awaitWithTimeout(
-                CarbonInterval::hour(),
-                fn(): bool => $this->queue !== [],
-            );
-
-            // No one rated the other
-            if (!$isEvent) {
-                break;
-            }
-
-            foreach ($this->queue as $request) {
-                if ($request instanceof UserRateRequest) {
-                    $this->trip = yield $this->taxiOrdering->rateUser($this->trip->uuid, $request);
-                } elseif ($request instanceof DriverRateRequest) {
-                    $this->trip = yield $this->taxiOrdering->rateDriver($this->trip->uuid, $request);
-                }
-            }
-        }
     }
 
     #[Workflow\UpdateMethod]
     public function cancelRequest(CancelRequest $request): void
     {
         $this->cancelRequest = $request;
-    }
-
-    #[Workflow\SignalMethod]
-    public function rateUser(UserRateRequest $request): void
-    {
-        $this->queue[] = $request;
-    }
-
-    #[Workflow\SignalMethod]
-    public function rateDriver(DriverRateRequest $request): void
-    {
-        $this->queue[] = $request;
     }
 
     #[Workflow\UpdateMethod]
@@ -269,6 +259,46 @@ final class TaxiRequestWorkflow
     #[Workflow\QueryMethod]
     public function getTaxiRequestStatus(): string
     {
-        return $this->taxiRequest->status->value;
+        return $this->taxiRequest?->status->value ?? 'unknown';
+    }
+
+    private function compensate(\Throwable $e, Workflow\Saga $requestSaga): \Generator
+    {
+        // Run compensation for the request in a detached way to avoid activities
+        // cancellation in case of the workflow finishing
+
+        // Parallel activities execution
+        yield Workflow::asyncDetached(function () use ($requestSaga, $e) {
+            yield Promise::all([
+                // Return money to the user
+                $requestSaga->compensate(),
+
+                // Notify the user that the request was canceled
+                $this->notificationService->userCanceled($this->taxiRequest->uuid),
+
+                // Cancel the request
+                $this->taxiOrdering->cancelRequest(
+                    $this->taxiRequest->uuid,
+                    $e->getMessage(),
+                ),
+            ]);
+        });
+    }
+
+    private function checkRequestStatus(): void
+    {
+        if ($this->cancelRequest) {
+            throw new TaxiRequestCancelledException($this->cancelRequest->reason);
+        }
+    }
+
+    /**
+     * @throws TaxiRequestCancelledException
+     */
+    private function driverAssigned(): bool
+    {
+        $this->checkRequestStatus();
+
+        return $this->acceptRequest !== null;
     }
 }

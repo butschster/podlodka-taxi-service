@@ -29,7 +29,7 @@ final class AcceptRequestCommand extends Command
             workflowID: $requestUuid->toString(),
         );
 
-        $driverUuid = Uuid::uuid7();
+        $driverUuid = Uuid::fromString('0191f9a2-b1b3-7284-b8b7-ada86e2c3029');
 
         $wf->acceptRequest(
             new AcceptRequest(

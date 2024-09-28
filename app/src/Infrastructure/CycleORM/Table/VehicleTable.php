@@ -8,8 +8,7 @@ final readonly class VehicleTable
 {
     public const TABLE_NAME = 'vehicles';
 
-    public const UUID = 'id';
-    public const DRIVER_UUID = 'driver_id';
+    public const UUID = 'uuid';
     public const LICENSE_PLATE = 'license_plate';
     public const MODEL = 'model';
     public const VEHICLE_CLASS = 'vehicle_class';

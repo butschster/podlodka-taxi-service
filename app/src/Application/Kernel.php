@@ -36,6 +36,7 @@ class Kernel extends \Spiral\Framework\Kernel
 
             // Application
             Bootloader\AppBootloader::class,
+            Bootloader\PersistenceBootloader::class,
         ];
     }
 }

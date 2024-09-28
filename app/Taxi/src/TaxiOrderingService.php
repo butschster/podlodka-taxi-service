@@ -89,12 +89,7 @@ final readonly class TaxiOrderingService
     {
         $taxiRequest = $this->taxiRequests->getByUuid($requestUuid);
 
-        if (!$taxiRequest->isAccepted()) {
-            throw new InvalidRequestStatusException(\sprintf('Cannot start trip for request %s', $requestUuid));
-        }
-
         $trip = $taxiRequest->startTrip();
-
         $this->trips->persist($trip);
         $this->taxiRequests->persist($taxiRequest);
 
@@ -122,6 +117,10 @@ final readonly class TaxiOrderingService
 
         $this->taxiRequests->persist($request);
         $this->trips->persist($trip);
+
+        $driver = $this->drivers->getByUuid($request->driverUuid);
+        $driver->isAvailable = true;
+        $this->drivers->persist($driver);
 
         return $trip;
     }
@@ -160,7 +159,7 @@ final readonly class TaxiOrderingService
         );
 
         // It can't be more than 2 km away
-        if ($distance > 2) {
+        if ($distance > 50) {
             throw new InvalidRequestStatusException('Driver is too far from the user');
         }
     }
@@ -180,6 +179,12 @@ final readonly class TaxiOrderingService
 
         $taxiRequest->cancel($reason);
         $this->taxiRequests->persist($taxiRequest);
+
+        if ($taxiRequest->isAccepted()) {
+            $driver = $this->drivers->getByUuid($taxiRequest->driverUuid);
+            $driver->isAvailable = true;
+            $this->drivers->persist($driver);
+        }
 
         return $taxiRequest;
     }

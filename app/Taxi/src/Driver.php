@@ -7,8 +7,9 @@ namespace Taxi;
 use App\Infrastructure\CycleORM\Table\DriverTable;
 use Cycle\Annotated\Annotation\Column;
 use Cycle\Annotated\Annotation\Entity;
+use Cycle\Annotated\Annotation\Relation\BelongsTo;
 use Cycle\Annotated\Annotation\Relation\HasMany;
-use Cycle\Annotated\Annotation\Relation\HasOne;
+use Doctrine\Common\Collections\ArrayCollection;
 use Ramsey\Uuid\UuidInterface;
 use Taxi\Repository\DriverRepositoryInterface;
 
@@ -22,24 +23,30 @@ class Driver
     public const ROLE = 'driver';
 
     public const F_UUID = 'uuid';
+    public const F_VEHICLE_UUID = 'vehicleUuid';
     public const F_NAME = 'name';
     public const F_PHONE = 'phone';
     public const F_IS_AVAILABLE = 'isAvailable';
     public const F_CURRENT_LOCATION = 'currentLocation';
     public const F_CREATED_AT = 'createdAt';
 
-    /** @var Rating[] */
+    /** @var ArrayCollection<Rating> */
     #[HasMany(target: Rating::class, innerKey: Driver::F_UUID, outerKey: Rating::F_RECIPIENT_UUID)]
-    private array $ratings = [];
+    private ArrayCollection $ratings;
+
+    #[Column(type: 'boolean', name: DriverTable::IS_AVAILABLE)]
+    public bool $isAvailable = true;
 
     #[Column(type: 'datetime', name: DriverTable::CREATED_AT)]
     public \DateTimeInterface $createdAt;
+
+    #[Column(type: 'jsonb', name: DriverTable::CURRENT_LOCATION, nullable: true, default: null, typecast: Location::class)]
+    public ?Location $currentLocation = null;
 
     /**
      * @param string $name Driver's full name
      * @param string $phone Driver's phone number
      * @param Vehicle $vehicle Driver's vehicle
-     * @param bool $isAvailable Whether the driver is available for a ride (If driver accepts the ride, this will be set to false)
      */
     public function __construct(
         #[Column(type: 'uuid', name: DriverTable::UUID, primary: true, typecast: 'uuid')]
@@ -48,29 +55,15 @@ class Driver
         public string $name,
         #[Column(type: 'string', name: DriverTable::PHONE)]
         public string $phone,
-        #[HasOne(target: Vehicle::class, innerKey: Driver::F_UUID, outerKey: Vehicle::F_DRIVER_UUID)]
+        #[BelongsTo(target: Vehicle::class, innerKey: Driver::F_VEHICLE_UUID, outerKey: Vehicle::F_UUID)]
         public Vehicle $vehicle,
-        #[Column(type: 'boolean', name: DriverTable::IS_AVAILABLE)]
-        public bool $isAvailable = true,
-        #[Column(type: 'jsonb', name: DriverTable::CURRENT_LOCATION, typecast: Location::class)]
-        public ?Location $currentLocation = null,
     ) {
+        $this->ratings = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
     }
 
     public function addRating(Rating $rating): void
     {
-        $this->ratings[] = $rating;
-    }
-
-    public function getAverageRating(): float
-    {
-        if ($this->ratings === []) {
-            return 0;
-        }
-
-        $ratings = $this->ratings;
-
-        return \array_sum(\array_map(fn(Rating $r) => $r->rating, $ratings)) / \count($ratings);
+        $this->ratings->add($rating);
     }
 }

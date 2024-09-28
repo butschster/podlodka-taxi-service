@@ -7,6 +7,7 @@ namespace Taxi;
 use App\Infrastructure\CycleORM\Table\TripTable;
 use Cycle\Annotated\Annotation\Column;
 use Cycle\Annotated\Annotation\Entity;
+use Cycle\Annotated\Annotation\Relation\BelongsTo;
 use Ramsey\Uuid\UuidInterface;
 use Taxi\Repository\TripRepositoryInterface;
 
@@ -38,6 +39,9 @@ class Trip
 
     #[Column(type: 'uuid', name: TripTable::DRIVER_RATING_UUID, nullable: true, default: null, typecast: 'uuid')]
     public ?UuidInterface $driverRatingUuid = null;
+
+    #[BelongsTo(target: TaxiRequest::class, innerKey: self::F_TAXI_REQUEST_UUID, outerKey: TaxiRequest::F_UUID)]
+    public TaxiRequest $taxiRequest;
 
     /**
      * This class represents a taxi trip.

@@ -10,8 +10,9 @@
     },
     "require": {
         "php": ">=8.3",
-        "ext-sockets": "*",
         "ext-mbstring": "*",
+        "ext-sockets": "*",
+        "doctrine/collections": "^2.2",
         "nesbot/carbon": "^3.4",
         "spiral/cycle-bridge": "^2.5",
         "spiral/framework": "^3.14",
@@ -21,6 +22,7 @@
         "temporal-php/support": "^1.0"
     },
     "require-dev": {
+        "spiral-packages/database-seeder": "^3.2",
         "buggregator/trap": "^1.7",
         "spiral/roadrunner-cli": "^2.5",
         "spiral/testing": "^2.3",
@@ -29,12 +31,14 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/src",
-            "Taxi\\": "app/Taxi/src"
+            "Taxi\\": "app/Taxi/src",
+            "Payment\\": "app/Payment/src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests"
+            "Tests\\": "tests",
+            "Database\\": "app/database"
         }
     },
     "config": {

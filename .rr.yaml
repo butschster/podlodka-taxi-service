@@ -1,5 +1,15 @@
 version: '3'
+
 rpc:
-    listen: 'tcp://127.0.0.1:6001'
+  listen: 'tcp://127.0.0.1:6001'
+
+server:
+  command: "php app.php"
+
 temporal:
-    address: '127.0.0.1:7233'
+  address: '127.0.0.1:7233'
+
+logs:
+  level: debug
+  channels:
+    temporal.level: error

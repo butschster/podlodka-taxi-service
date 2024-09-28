@@ -6,6 +6,7 @@ namespace App\Application\Bootloader\Infrastructure;
 
 use Spiral\Boot\Bootloader\Bootloader;
 use Spiral\Cycle\Bootloader as CycleBridge;
+use Spiral\DatabaseSeeder\Bootloader\DatabaseSeederBootloader;
 
 final class CycleOrmBootloader extends Bootloader
 {
@@ -17,6 +18,8 @@ final class CycleOrmBootloader extends Bootloader
             CycleBridge\SchemaBootloader::class,
             CycleBridge\CycleOrmBootloader::class,
             CycleBridge\AnnotatedBootloader::class,
+
+            DatabaseSeederBootloader::class,
         ];
     }
 }

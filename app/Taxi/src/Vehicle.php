@@ -20,7 +20,6 @@ class Vehicle
     public const ROLE = 'vehicle';
 
     public const F_UUID = 'uuid';
-    public const F_DRIVER_UUID = 'driverUuid';
     public const F_LICENSE_PLATE = 'licensePlate';
     public const F_MODEL = 'model';
     public const F_VEHICLE_CLASS = 'vehicleClass';
@@ -32,8 +31,6 @@ class Vehicle
     public function __construct(
         #[Column(type: 'uuid', name: VehicleTable::UUID, primary: true, typecast: 'uuid')]
         public UuidInterface $uuid,
-        #[Column(type: 'uuid', name: VehicleTable::DRIVER_UUID, typecast: 'uuid')]
-        public UuidInterface $driverUuid,
         #[Column(type: 'string', name: VehicleTable::LICENSE_PLATE)]
         public string $licensePlate,
         #[Column(type: 'string', name: VehicleTable::MODEL)]

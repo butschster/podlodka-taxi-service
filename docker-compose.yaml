@@ -28,8 +28,24 @@ services:
     logging:
       driver: none
 
-  temporal-postgresql:
-    container_name: podlodka-temporal-postgresql
+  adminer:
+    container_name: podlodka-adminer
+    image: adminer
+    restart: unless-stopped
+    command: [ "php", "-d", "post_max_size=500M", "-d", "upload_max_filesize=500M", "-S", "0.0.0.0:8080", "-t", "/var/www/html" ]
+    environment:
+      ADMINER_DEFAULT_SERVER: ${ADMINER_DEFAULT_SERVER:-db}
+    networks:
+      - podlodka-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.entrypoints=web"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.podlodka.localhost`)"
+    logging:
+      driver: none
+
+  temporal-db:
+    container_name: podlodka-temporal-db
     image: postgres:15
     restart: unless-stopped
     env_file:
@@ -100,6 +116,30 @@ services:
       - "traefik.http.routers.temporal.entrypoints=web"
       - "traefik.http.routers.temporal.rule=Host(`temporal.podlodka.localhost`)"
       - "traefik.http.services.temporal.loadbalancer.server.port=8080"
+    logging:
+      driver: none
+
+  db:
+    container_name: podlodka-db
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - type: bind
+        source: ./.docker-data/db
+        target: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready -d $$POSTGRES_USER -U $$POSTGRES_USER
+      interval: 2s
+      timeout: 5s
+      start_period: 2s
+    restart: unless-stopped
+    networks:
+      - podlodka-network
     logging:
       driver: none
 

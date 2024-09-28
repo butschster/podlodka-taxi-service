@@ -12,12 +12,13 @@ use Taxi\Exception\TaxiRequestCancelledException;
 use Taxi\Exception\TaxiServiceException;
 use Temporal\Exception\Failure\ActivityFailure;
 use Temporal\Exception\Failure\ApplicationFailure;
+use Temporal\Exception\Failure\CanceledFailure;
 use Temporal\Exception\Failure\TemporalFailure;
 
 /**
  * Helper class to work with Temporal exceptions.
  * @internal
- * @template T of \Throwable
+ * @psalm-type T = \Throwable
  */
 final class ExceptionHelper
 {
@@ -174,8 +175,10 @@ final class ExceptionHelper
         };
     }
 
-    public static function shouldBeCompensated(\Throwable $e): bool
+    public static function shouldBeCanceled(\Throwable $e): bool
     {
-        return $e instanceof TaxiRequestCancelledException || self::isDriverUnavailable($e);
+        return $e instanceof TaxiRequestCancelledException
+            || self::isDriverUnavailable($e)
+            || $e instanceof CanceledFailure;
     }
 }
